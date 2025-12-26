@@ -1,0 +1,52 @@
+/* style.css */
+.stApp { background-color: #0e1117; }
+h1, h2, h3, h4, p, span, label { color: #fafafa !important; }
+
+/* Judul Metrik: Besar dan Bold */
+.metric-label {
+    color: #8b949e !important;
+    font-size: 1.1rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.metric-value {
+    color: #ffffff !important;
+    font-size: 1.8rem;
+    font-weight: 800;
+}
+
+.metric-card {
+    background-color: #161b22;
+    padding: 1.2rem;
+    border-radius: 10px;
+    border: 1px solid #30363d;
+    border-top: 3px solid #007bff;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.filter-header {
+    background-color: #161b22;
+    padding: 12px 20px;
+    border-radius: 8px;
+    border-left: 5px solid #007bff;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.broker-info-card {
+    background-color: #161b22;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #30363d;
+    height: 100%;
+    margin: 12px;
+}
+
+.stExpander {
+    background-color: #161b22 !important;
+    border: 1px solid #30363d !important;
+    margin-bottom: 2px !important;
+}
