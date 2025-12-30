@@ -4,12 +4,12 @@ import glob
 import os
 from datetime import datetime, timedelta
 from broker_data import BROKER_CATEGORIES
-from report_data import MARKETPLACE_REPORTS
+# Baris import report_data telah dihapus
 
 # 1. KONFIGURASI HALAMAN
 st.set_page_config(page_title="Jejak Duit - Broker Analyzer", layout="wide", page_icon="💸")
 
-# 2. FUNGSI PEMBANTU (CSS & FORMATTING)
+# 2. FUNGSI PEMBANTU
 def local_css(file_name):
     if os.path.exists(file_name):
         with open(file_name) as f:
@@ -34,14 +34,14 @@ def load_data():
     df["net_lot"] = df["net_lot"].abs()
     return df
 
-# --- EKSEKUSI DATA & TIMESTAMP (PENTING: Definisikan sebelum Layout) ---
+# --- EKSEKUSI DATA & TIMESTAMP ---
 local_css("style.css")
-data = load_data()  # Mendefinisikan variabel 'data' agar tidak NameError
+data = load_data()
 
-# Penanda waktu pembaruan aplikasi (WIT - UTC+9)
+# Penanda waktu pembaruan aplikasi diubah ke WIB (UTC+7)
 utc_mtime = datetime.fromtimestamp(os.path.getmtime(__file__))
-wit_mtime = utc_mtime + timedelta(hours=9) 
-app_last_update = wit_mtime.strftime('%d %b %Y, %H:%M')
+wib_mtime = utc_mtime + timedelta(hours=7) # +7 Jam untuk WIB
+app_last_update = wib_mtime.strftime('%d %b %Y, %H:%M')
 
 # 4. LAYOUT UTAMA [3, 6, 3]
 _, col_main, _ = st.columns([3, 6, 3])
@@ -52,12 +52,10 @@ with col_main:
     st.markdown("<h2 style='text-align: center; margin-top: 0;'>Jejak Duit: Broker Analyzer</h2>", unsafe_allow_html=True)
     st.markdown("<div style='text-align: center; margin-bottom: 15px;'><a href='https://trakteer.id/' target='_blank'><img src='https://cdn.trakteer.id/images/embed/trbtn-red-1.png' height='35' style='border:0px;height:35px;' alt='Trakteer'></a></div>", unsafe_allow_html=True)
 
-    # --- DISCLAIMER ---
     with st.expander("⚠️ Disclaimer & Info Dashboard"):
         st.markdown("""
-        * **DYOR:** Dashboard ini hanya alat bantu visualisasi statistik, bukan ajakan jual/beli saham tertentu.
-        * **Broker Terkurasi:** Menganalisa 34 broker pilihan.
-        > Gunakan dashboard ini sebagai referensi tambahan bagi analisa mandiri Anda.
+        * **DYOR:** Dashboard ini hanyalah alat bantu visualisasi statistik, bukan ajakan jual/beli saham tertentu.
+        * **34 Broker Terkurasi:** Menganalisa 34 broker pilihan dari daftar target kurasi.
         """)
 
     st.divider()
@@ -80,7 +78,7 @@ with col_main:
 
     st.divider()
 
-    # --- DASHBOARD SAHAM ---
+    # --- TABEL BELI/JUAL ---
     tab_beli, tab_jual = st.tabs(["🟢 TABEL BELI", "🔴 TABEL JUAL"])
 
     def render_analysis(side):
@@ -95,29 +93,17 @@ with col_main:
             st.warning(f"Data {side} tidak ditemukan.")
             return
 
-        # Metrik Dashboard
         m1, m2 = st.columns(2)
         with m1:
             st.markdown(f'<div class="metric-card"><div class="metric-label">TOTAL {side}</div><div class="metric-value">{format_currency(f_df["net_value"].sum())}</div></div>', unsafe_allow_html=True)
         with m2:
             st.markdown(f'<div class="metric-card"><div class="metric-label">SAHAM DITRANSAKSI</div><div class="metric-value">{f_df["stock_code"].nunique()}</div></div>', unsafe_allow_html=True)
 
-        st.download_button(label="📥 Unduh Data (.csv)", data=f_df.to_csv(index=False).encode('utf-8'), file_name=f'jejak_duit_{side.lower()}.csv', mime='text/csv', use_container_width=True)
+        st.download_button(label="📥 Unduh CSV", data=f_df.to_csv(index=False).encode('utf-8'), file_name=f'jejak_duit_{side.lower()}.csv', mime='text/csv', use_container_width=True)
         
         top_15 = f_df.groupby("stock_code")["net_value"].sum().sort_values(ascending=False).head(15)
         with st.expander(f"📈 Grafik Top 15 {side}"):
             st.bar_chart(top_15, color="#007bff")
-
-        # Judul Daftar
-        p_str = f"{start_date.strftime('%d/%m/%y')} - {end_date.strftime('%d/%m/%y')}"
-        st.markdown(f"""
-            <div style='display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 10px;'>
-                <h3 style='margin: 0;'>📋 Daftar Akumulasi/Distribusi {side}</h3>
-                <span style='background-color: #374151; color: #9ca3af; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;'>
-                    📅 {p_str}
-                </span>
-            </div>
-        """, unsafe_allow_html=True)
 
         for stock, val in top_15.items():
             full_s = data[(data["stock_code"] == stock) & (data["date"] >= pd.Timestamp(start_date)) & (data["date"] <= pd.Timestamp(end_date)) & (data["side"] == side)]
@@ -135,11 +121,7 @@ with col_main:
 
     st.divider()
     
-    # --- FOOTER LAPORAN & KLASIFIKASI ---
-    with st.expander("📚 Laporan Hasil Analisa Periodik (PDF)"):
-        st.write("Rangkuman analisa mingguan dan bulanan:")
-        for report in MARKETPLACE_REPORTS[:3]:
-            st.markdown(f"- [{report['title']}]({report['url']})")
+    # Bagian Laporan Periodik TELAH DIHAPUS
 
     with st.expander("🔍 Klasifikasi 34 Broker Terpilih"):
         r1_c1, r1_c2 = st.columns(2)
@@ -154,14 +136,14 @@ with col_main:
                     <p style="font-size: 0.9rem;"><b>Codes:</b> {', '.join(item['codes'])}</p>
                 </div>""", unsafe_allow_html=True)
 
-    # --- FINAL CENTERED FOOTER (WIT - 24H) ---
+    # --- FINAL CENTERED FOOTER (WIB - 24H) ---
     st.divider()
     st.markdown(f"""
         <div style='text-align: center; color: #4b5563; font-size: 0.85rem; padding-bottom: 30px;'>
             <p style='font-style: italic; margin-bottom: 5px;'>
-                Aplikasi diracik dengan bantuan kafein, LLM, 
-                dan rasa penasaran terhadap pergerakan bursa. ☕ 🤖 🤖 📈
+                Aplikasi ini diracik dengan bantuan kafein berlebih, kecerdasan buatan (LLM), 
+                dan rasa penasaran terhadap pergerakan 'Whales' di bursa. ☕🤖📈
             </p>
-            <p><b>App Last Update:</b> {app_last_update}</p>
+            <p><b>App Last Update:</b> {app_last_update} WIB</p>
         </div>
     """, unsafe_allow_html=True)
